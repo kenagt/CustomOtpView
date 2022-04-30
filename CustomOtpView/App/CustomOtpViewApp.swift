@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct CustomOtpViewApp: App {
+    @StateObject var phoneViewModel = PhoneViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ActivateAccountView(phoneViewModel: phoneViewModel)
         }
     }
 }
