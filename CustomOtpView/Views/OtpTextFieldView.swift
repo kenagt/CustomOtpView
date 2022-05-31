@@ -7,23 +7,28 @@
 import SwiftUI
 import Combine
 
-public struct OtpTextFieldView: View {
+public struct OTPTextFieldView: View {
     enum FocusField: Hashable {
         case field
     }
+    @ObservedObject var phoneViewModel: PhoneViewModel
     @FocusState private var focusedField: FocusField?
-    @State var pin: String = ""
-    var handler: (String, (Bool) -> Void) -> Void
+    
+    init(phoneViewModel: PhoneViewModel){
+        self.phoneViewModel = phoneViewModel
+        UITextField.appearance().clearButtonMode = .never
+        UITextField.appearance().tintColor = UIColor.clear
+    }
     
     private var backgroundTextField: some View {
-        return TextField("", text: $pin)
+        return TextField("", text: $phoneViewModel.verificationCode)
             .frame(width: 0, height: 0, alignment: .center)
             .font(Font.system(size: 0))
             .accentColor(.blue)
             .foregroundColor(.blue)
             .multilineTextAlignment(.center)
             .keyboardType(.numberPad)
-            .onReceive(Just(pin)) { _ in limitText(Constants.OTP_CODE_LENGTH) }
+            .onReceive(Just(phoneViewModel.verificationCode)) { _ in phoneViewModel.limitText(Constants.OTP_CODE_LENGTH) }
             .focused($focusedField, equals: .field)
             .task {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5)
@@ -40,7 +45,7 @@ public struct OtpTextFieldView: View {
             HStack {
                 ForEach(0..<Constants.OTP_CODE_LENGTH) { index in
                     ZStack {
-                        Text(self.getPin(at: index))
+                        Text(phoneViewModel.getPin(at: index))
                             .font(Font.system(size: 27))
                             .fontWeight(.semibold)
                             .foregroundColor(Color.textColorPrimary)
@@ -49,23 +54,10 @@ public struct OtpTextFieldView: View {
                             .foregroundColor(Color.textColorPrimary)
                             .padding(.trailing, 5)
                             .padding(.leading, 5)
-                            .opacity(self.pin.count <= index ? 1 : 0)
+                            .opacity(phoneViewModel.verificationCode.count <= index ? 1 : 0)
                     }
                 }
             }
-        }
-    }
-    
-    private func getPin(at index: Int) -> String {
-        guard self.pin.count > index else {
-            return ""
-        }
-        return self.pin[index]
-    }
-    
-    private func limitText(_ upper: Int) {
-        if pin.count > upper {
-            pin = String(pin.prefix(upper))
         }
     }
 }

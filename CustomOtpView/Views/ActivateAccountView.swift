@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct ActivateAccountView: View {
     //MARK: vars
     @State var otpCode = ""
@@ -23,11 +22,13 @@ struct ActivateAccountView: View {
         appearance.shadowColor = .clear
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        
+        Utils.shared.requestUserNotifications()
     }
     
     var phoneNumberDesc : some View {
         VStack(spacing: 0) {
-            Text(LocalizedStringKey("sent.code.phone"))
+            Text("Resend code.")
                 .font(Font.system(size: 15))
                 .foregroundColor(Color.textColorPrimary)
             HStack(spacing: 1) {
@@ -36,58 +37,36 @@ struct ActivateAccountView: View {
                     .fontWeight(.semibold)
                     .frame(width: nil, height: nil, alignment: .leading)
                     .foregroundColor(Color.textColorPrimary)
-                NavigationLink(destination: PhoneSetupView(phoneViewModel: phoneViewModel), isActive: $showPhoneSetupView) {
-                    Text(LocalizedStringKey("wrong.number"))
-                        .font(Font.system(size: 15))
-                        .foregroundColor(Color.textColor)
-                }
+                Text(LocalizedStringKey("Wrong number?"))
+                    .font(Font.system(size: 15))
+                    .foregroundColor(Color.textColor)
             }
         }
         .padding(.top, 15)
     }
     
     var btnReactivate: some View {
-        HStack {
-            Button(action: {
-                //Restart countdown timer
-                phoneViewModel.startTimer()
-                
-                //Viewmodel func activate via call
-            }) {
-                Text(LocalizedStringKey("resend.sms"))
-                    .foregroundColor(!phoneViewModel.timerExpired ? Color.btnColorDisabled : Color.textColor)
-                    .font(Font.system(size: 17))
-                    .fontWeight(.medium)
-                    .frame(maxWidth: 150)
-            }
-            .padding(15)
-            .cornerRadius(50)
-            .disabled(!phoneViewModel.timerExpired)
-            
-            Button(action: {
-                //Restart countdown timer
-                phoneViewModel.startTimer()
-                
-                //Viewmodel func activate via call
-            }) {
-                Text(LocalizedStringKey("activate.via.call"))
-                    .foregroundColor(!phoneViewModel.timerExpired ? Color.btnColorDisabled : Color.textColor)
-                    .font(Font.system(size: 17))
-                    .fontWeight(.medium)
-                    .frame(maxWidth: 150)
-            }
-            .padding(15)
-            .cornerRadius(50)
-            .disabled(!phoneViewModel.timerExpired)
+        Button(action: {
+            //Restart countdown timer
+            phoneViewModel.startTimer()
+        }) {
+            Text("Resend SMS")
+                .foregroundColor(!phoneViewModel.timerExpired ? Color.btnColorDisabled : Color.textColor)
+                .font(Font.system(size: 17))
+                .fontWeight(.medium)
+                .frame(maxWidth: 150)
         }
+        .padding(15)
+        .cornerRadius(50)
+        .disabled(!phoneViewModel.timerExpired)
     }
     
     var codeDigits: some View {
         VStack {
-            Text(LocalizedStringKey("6.digit.code"))
+            Text("6 digit code")
                 .font(Font.system(size: 25))
                 .foregroundColor(Color.gray)
-            OTPView()
+            OTPTextFieldView(phoneViewModel: phoneViewModel)
                 .padding(.leading, 55)
                 .padding(.trailing, 55)
             CountDownView(phoneViewModel: phoneViewModel)
@@ -109,6 +88,7 @@ struct ActivateAccountView: View {
         .background(Color.backgroundColor)
         .navigationBarBackButtonHidden(true)
         .navigationBarTitle(LocalizedStringKey("activate.account"), displayMode: .inline)
+        .onAppear { phoneViewModel.requestVerificationID() }
     }
 }
 
